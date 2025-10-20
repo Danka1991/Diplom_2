@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import json
 import pytest
 import allure
 
@@ -13,7 +12,7 @@ def api_client():
     return ApiClient()
 
 @pytest.fixture()
-@allure.step("Generate unique user credentials")
+@allure.step("Создание пользователя")
 def new_user_creds():
     email = random_email("yandex.ru")
     password = random_password()
@@ -21,7 +20,7 @@ def new_user_creds():
     return {"email": email, "password": password, "name": name}
 
 @pytest.fixture()
-@allure.step("Create a registered user")
+@allure.step("Создание зарегистрированного пользователя")
 def registered_user(api_client: ApiClient, new_user_creds):
     resp = api_client.register(new_user_creds)
     i = 0 
@@ -30,3 +29,10 @@ def registered_user(api_client: ApiClient, new_user_creds):
         resp = api_client.register(new_user_creds)
         i += 1
     return new_user_creds
+
+@pytest.fixture()
+@allure.step("Регистрация и авторизация пользователя")
+def registered_and_authorized_user(api_client: ApiClient, registered_user):
+    with allure.step(f"Авторизация пользователя {registered_user['email']}"):
+        api_client.login(registered_user["email"], registered_user["password"])
+    return registered_user
